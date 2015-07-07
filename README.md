@@ -41,5 +41,5 @@ To build, and run locally:
 git clone https://github.com/getconnect/connect-rb connect-rb
 cd connect-rb
 bundle install
-rake
+bundle exec rake
 ```
