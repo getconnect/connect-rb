@@ -123,9 +123,11 @@ module ConnectClient
     end
 
     class DeferredHttpResponse
-      include EventMachine::Deferrable
-      alias_method :response_received, :callback
-      alias_method :error_occured, :errback
+      if defined?(EventMachine::Deferrable)
+        include EventMachine::Deferrable
+        alias_method :response_received, :callback
+        alias_method :error_occured, :errback
+      end
     end
 
     class AsyncHttpError < StandardError
