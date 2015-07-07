@@ -10,7 +10,7 @@ module ConnectClient
 
     def push(collection_name_or_batches, event_or_events = nil)
       has_multiple_events = event_or_events.is_a?(Array)
-      has_collection_name = collection_name_or_batches.is_a?(String)
+      has_collection_name = collection_name_or_batches.is_a?(String) || collection_name_or_batches.is_a?(Symbol)
       is_batch = !has_collection_name || has_multiple_events
 
       if is_batch
