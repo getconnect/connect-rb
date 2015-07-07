@@ -1,3 +1,3 @@
 module ConnectClient
-  VERSION = "0.1.1"
+  VERSION = "VERSION_PLACEHOLDER"
 end
