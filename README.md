@@ -11,7 +11,7 @@ Sign up at [https://getconnect.io](https://getconnect.io) to generate and retrie
 ### Install with Bundler
 
 ```ssh
-gem 'connect_rb'
+gem 'connect_client'
 bundle install
 ```
 
