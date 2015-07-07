@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.version     = ConnectClient::VERSION
   gem.authors     = ["Team Connect"]
   gem.email       = "team@getconnect.io"
-  gem.homepage    = "https://github.com/getconnect/connect_client-rb"
+  gem.homepage    = "https://github.com/getconnect/connect-rb"
   gem.summary     = "Connect SDK"
   gem.description = "Ruby Connect SDK for interacting with the Connect API"
   gem.license     = "MIT"
