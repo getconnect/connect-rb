@@ -67,6 +67,7 @@ module ConnectClient
 
       def initialize(base_url, headers)
         require 'em-http-request'
+        require_relative 'deferred_http_response'
 
         @headers = headers
         @base_url = base_url.chomp('/')
@@ -119,14 +120,6 @@ module ConnectClient
         else
           ConnectClient::EventPushResponse.new status, content_type, http_reponse.error, events
         end
-      end
-    end
-
-    class DeferredHttpResponse
-      if defined?(EventMachine::Deferrable)
-        include EventMachine::Deferrable
-        alias_method :response_received, :callback
-        alias_method :error_occured, :errback
       end
     end
 

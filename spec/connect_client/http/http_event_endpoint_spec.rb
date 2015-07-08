@@ -118,4 +118,8 @@ describe ConnectClient::Http::EventEndpoint do
       }
     end
   end
+
+  it "should throw an async exception if EM is not running" do
+    proc { @async_endpoint.push_batch(@sample_batch) }.must_raise ConnectClient::Http::AsyncHttpError
+  end  
 end
