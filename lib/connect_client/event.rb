@@ -10,13 +10,8 @@ module ConnectClient
     attr_reader :data
 
     def initialize(data)
-      event_data_defaults = { id: SecureRandom.uuid, timestamp: Time.now.utc.iso8601 }
-      @data = event_data_defaults.merge(data)
-
-      if (@data[:timestamp].respond_to? :iso8601)
-        @data[:timestamp] = @data[:timestamp].iso8601
-      end
-
+      event_data_defaults = { id: SecureRandom.uuid, timestamp: Time.now }
+      @data = map_iso_dates event_data_defaults.merge(data)
       validate
     end
 
@@ -32,6 +27,33 @@ module ConnectClient
 
     def to_s
       "Event Data: #{@data}"
+    end
+
+    private
+
+    def map_iso_dates(data)
+      utc_converter = lambda { |value|
+        value_to_convert = value
+        map_utc = lambda { |value_item| utc_converter.call(value_item) }
+
+        return value_to_convert.map(&map_utc)  if value_to_convert.respond_to? :map
+
+        value_to_convert = value_to_convert.to_time if value_to_convert.respond_to? :to_time
+        value_to_convert = value_to_convert.utc if value_to_convert.respond_to? :utc
+        value_to_convert = value_to_convert.iso8601 if value_to_convert.respond_to? :iso8601
+
+        value_to_convert
+      }
+
+      mappedData = data.map do |key, value|
+        if value.is_a? Hash
+          [key, map_iso_dates(value)]
+        else
+          [key, utc_converter.call(value)]
+        end
+      end
+
+      Hash[mappedData]
     end
   end
 
