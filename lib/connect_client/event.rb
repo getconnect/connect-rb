@@ -36,11 +36,10 @@ module ConnectClient
         value_to_convert = value
         map_utc = lambda { |value_item| utc_converter.call(value_item) }
 
-        return value_to_convert.map(&map_utc)  if value_to_convert.respond_to? :map
+        return value_to_convert.map(&map_utc) if value_to_convert.respond_to? :map
 
-        value_to_convert = value_to_convert.to_time if value_to_convert.respond_to? :to_time
-        value_to_convert = value_to_convert.utc if value_to_convert.respond_to? :utc
-        value_to_convert = value_to_convert.iso8601 if value_to_convert.respond_to? :iso8601
+        value_to_convert = value_to_convert.to_time if value_to_convert.is_a?(DateTime) || value_to_convert.is_a?(Date)
+        value_to_convert = value_to_convert.utc.iso8601 if value_to_convert.is_a? Time
 
         value_to_convert
       }
