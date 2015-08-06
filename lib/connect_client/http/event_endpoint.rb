@@ -1,4 +1,5 @@
 require 'json'
+require 'cgi'
 require_relative '../event_push_response'
 
 module ConnectClient
@@ -14,29 +15,29 @@ module ConnectClient
         }
 
         if config.async
-          @http = Async.new config.base_url, headers
+          @http = EmHttp.new config.base_url, headers
         else
-          @http = Sync.new config.base_url, headers
+          @http = NetHttp.new config.base_url, headers
         end
 
       end
 
       def push(collection_name, event)
-        path_uri_part = "/events/#{collection_name}"
+        path_uri_part = "/events/#{CGI.escape(collection_name.to_s)}"
 
-        @http.send path_uri_part, event.data.to_json, event
+        @http.push_events path_uri_part, event.data.to_json, event
       end
 
       def push_batch(events_by_collection)
         path_uri_part = "/events"
 
-        @http.send path_uri_part, events_by_collection.to_json, events_by_collection
+        @http.push_events path_uri_part, events_by_collection.to_json, events_by_collection
       end
     end
 
     private 
 
-    class Sync
+    class NetHttp
       def initialize(base_url, headers)
         require 'uri'
         require 'net/http'
@@ -48,7 +49,7 @@ module ConnectClient
         setup_ssl if @connect_uri.scheme == 'https'
       end
 
-      def send(path, body, events)
+      def push_events(path, body, events)
         response = @http.post(path, body, @headers)
         ConnectClient::EventPushResponse.new response.code, response['Content-Type'], response.body, events
       end
@@ -56,14 +57,17 @@ module ConnectClient
       private
 
       def setup_ssl
+        root_ca = "#{ConnectClient::gem_root}/data/cacert.pem"
+        standard_depth = 5
+
         @http.use_ssl = true
         @http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        @http.verify_depth = 5
-        @http.ca_file = File.expand_path("../../../../data/cacert.pem", __FILE__)        
+        @http.verify_depth = standard_depth
+        @http.ca_file = root_ca
       end
     end
 
-    class Async
+    class EmHttp
 
       def initialize(base_url, headers)
         require 'em-http-request'
@@ -73,19 +77,19 @@ module ConnectClient
         @base_url = base_url.chomp('/')
       end
 
-      def send(path, body, events)
-        raise AsyncHttpError unless defined?(EventMachine) && EventMachine.reactor_running?
+      def push_events(path, body, events)
+        raise AsyncHttpError unless defined?(EventMachine) && EventMachine.reactor_running?          
 
         use_syncrony = defined?(EM::Synchrony)
 
         if use_syncrony
-          send_using_synchrony(path, body, events)
+          push_events_using_synchrony(path, body, events)
         else
-          send_using_deferred(path, body, events)
+          push_events_using_deferred(path, body, events)
         end
       end
 
-      def send_using_deferred(path, body, events)
+      def push_events_using_deferred(path, body, events)
         deferred = DeferredHttpResponse.new
         url_string = "#{@base_url}#{path}".chomp('/')
         http = EventMachine::HttpRequest.new(url_string).post(:body => body, :head => @headers)
@@ -104,7 +108,7 @@ module ConnectClient
         deferred
       end
 
-      def send_using_synchrony(path, body, events)
+      def push_events_using_synchrony(path, body, events)
         url_string = "#{@base_url}#{path}".chomp('/')
         http = EventMachine::HttpRequest.new(url_string).
                 post(:body => body, :head => @headers)
@@ -125,7 +129,7 @@ module ConnectClient
 
     class AsyncHttpError < StandardError
       def message
-        "An EventMachine loop must be running to send an async http request via 'em-http-request'"
+        "You have tried to push events asynchronously without an event machine event loop running. The easiest way to do this is by passing a block to EM.run"
       end
     end
   end

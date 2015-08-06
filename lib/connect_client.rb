@@ -3,6 +3,9 @@ require_relative 'connect_client/configuration'
 
 module ConnectClient
   class << self
+    def gem_root
+      File.expand_path '../..', __FILE__
+    end
 
     def configure
       config = Configuration.new
