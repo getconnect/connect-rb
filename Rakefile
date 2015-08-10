@@ -7,7 +7,7 @@ namespace :test do
     t.libs = ['lib', 'spec']
     t.warning = false
     t.verbose = true
-    t.test_files = FileList['spec/connect_client/http/*_spec.rb', 'spec/connect_client/*_spec.rb', 'spec/*_spec.rb']
+    t.test_files = FileList['spec/connect_client/security/*_spec.rb', 'spec/connect_client/http/*_spec.rb', 'spec/connect_client/*_spec.rb', 'spec/*_spec.rb']
   end
   
   desc 'Run the synchrony tests'
