@@ -1,5 +1,6 @@
 require_relative 'connect_client/client'
 require_relative 'connect_client/configuration'
+require_relative 'connect_client/security/filtered_key_generation.rb'
 
 module ConnectClient
   class << self
@@ -18,6 +19,10 @@ module ConnectClient
       @client = nil
     end
 
+    def generate_filtered_key(key_json, master_key)
+      ConnectClient::Security.generate_filtered_key key_json, master_key
+    end
+
     def method_missing(method, *args, &block)
       return super unless client.respond_to?(method)
       client.send(method, *args, &block)
@@ -25,7 +30,7 @@ module ConnectClient
 
     def respond_to?(method)
       return (!@client.nil? && @client.respond_to?(method)) || super
-    end   
+    end
 
     private
 
